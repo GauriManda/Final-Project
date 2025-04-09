@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindTrack Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        background-color: #f4f4f4;
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 250px;
+        background-color: #4418c8;
+        color: white;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+      }
+      .sidebar h2 {
+        margin-bottom: 20px;
+        font-size: 30px;
+      }
+      .icons-container {
+        position: absolute;
+        top: 30px;
+        right: 40px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      .icon:hover {
+        transform: scale(1.1);
+      }
+
+      .notification-box {
+        display: none;
+        position: absolute;
+        top: 60px;
+        right: 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        z-index: 999;
+        width: 250px;
+      }
+
+      .notification-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+      }
+
+      .notification-box li {
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .student-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .student-photo {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+      }
+      .student-info {
+        text-align: center;
+      }
+      .sidebar a {
+        text-decoration: none;
+        color: white;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.3s;
+        border-radius: 5px;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .content {
+        flex: 1;
+        padding: 30px;
+        margin-left: 270px;
+      }
+      .content h2 {
+        font-size: 30px;
+      }
+      .student-section h2 {
+        margin-left: 30px;
+        font-size: 25px;
+      }
+
+      .student-card {
+        margin-top: 50px;
+        background: #d6f4f4;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin-left: 30px;
+      }
+      .student-card h3 {
+        margin: 0;
+      }
+      .button {
+        padding: 12px 20px;
+        font-size: 1rem;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .view-videos {
+        background: #4418c8;
+      }
+      .view-videos:hover {
+        background: #1565c0;
+      }
+      .view-images {
+        background: #4418c8;
+      }
+      .view-images:hover {
+        background: #1565c0;
+      }
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 60%;
+        max-height: 80%;
+        overflow-y: auto;
+        text-align: center;
+      }
+      .modal img,
+      .modal video {
+        width: 100%;
+        border-radius: 10px;
+        margin-top: 10px;
+      }
+      .close {
+        cursor: pointer;
+        color: red;
+        font-size: 24px;
+        font-weight: bold;
+        float: right;
+      }
+
+      .Exercises-section h1 {
+        margin-left: 30px;
+      }
+      .exercises-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 columns in one row */
+        gap: 20px; /* Space between boxes */
+        max-width: 800px; /* Adjust width */
+        margin-left: 30px;
+      }
+
+      .box {
+        height: 100px; /* Increased height to accommodate progress bar */
+        background: #ebf6eb;
+        border-radius: 10px;
+        border: 1px solid rgb(47, 255, 95);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-size: 18px;
+        cursor: pointer;
+        margin-top: 30px;
+      }
+
+      /* Progress bar container */
+      .progress-container {
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      /* The actual progress bar */
+      .progress-bar {
+        height: 12px;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      /* The progress indicator */
+      .progress {
+        height: 100%;
+        background-color: #0d9106;
+        border-radius: 10px;
+      }
+
+      /* Progress text */
+      .progress-text {
+        font-size: 12px;
+        margin-top: 5px;
+        color: #555;
+      }
+
+      .assessment-section h2 {
+        margin-left: 30px;
+        font-size: 28px;
+      }
+      .container {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .row {
+        margin-left: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 20px;
+        gap: 10px;
+      }
+      .row:nth-child(even) {
+        flex-direction: row-reverse;
+      }
+      .circle-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .assessment-button {
+        padding: 10px 20px;
+        background: #4418c8;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .assessment-button:hover {
+        background: #3620a3;
+      }
+
+      .Report-section h2 {
+        margin-left: 30px;
+        font-size: 25px;
+      }
+      .container-1 {
+        width: 50%;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        margin-top: 50px;
+      }
+      .result {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+      canvas {
+        max-width: 300px;
+        margin: 20px auto;
+      }
+      .nearme-section {
+        margin-left: 30px;
+        margin-top: 50px;
+      }
+      .nearme-section h2 {
+        font-size: 25px;
+      }
+      .counselor-list {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .counselor-card {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 250px;
+        text-align: center;
+      }
+      .counselor-photo {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .counselor-info h3 {
+        margin: 10px 0 5px;
+      }
+      .counselor-info p {
+        margin: 5px 0;
+        color: #555;
+      }
+      .counselor-card button {
+        background: #4418c8;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      .counselor-card button:hover {
+        background: #3620a3;
+      }
+      .search-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .search-container {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+      }
+      .search-box {
+        padding: 10px;
+        width: 300px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .counselor-card .stars {
+        color: #f4c542;
+        font-size: 20px;
+        margin-top: 5px;
+      }
+      footer {
+        color: Black;
+        text-align: center;
+        padding: 20px;
+        position: relative;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>🧠MindTrack</h2>
+      <br />
+      <div class="student-container">
+        <img
+          src="{{ url_for('static', filename='images/student.png') }}"
+          alt="Student"
+          class="student-photo"
+        />
+        <div class="student-info">
+          <strong>John Doe</strong>
+          <br />
+          <small>ID: 12345</small>
+          <br />
+          <small>Age: 6</small>
+          <br />
+          <small>Class: 1st Grade</small>
+        </div>
+      </div>
+
+      <a href="#Exercises" onclick="scrollToSection(event, 'Exercises')"
+        >🧩 Cognitive Excercises</a
+      >
+      <br />
+      <a href="#Assessment" onclick="scrollToSection(event, 'assessment')"
+        >🎓 Assessment</a
+      >
+      <br />
+      <a href="#Report" onclick="scrollToSection(event, 'Report')"
+        >📑 Report Card</a
+      >
+      <br />
+
+      <a href="#nearme" onclick="scrollToSection(event, 'nearme')"
+        >🤝 Counsellor near me</a
+      >
+    </div>
+    <div class="content">
+      <section id="students" class="student-section">
+        <h2>
+          Welcome Back !! <br />
+          Track Your child progress and activities.📈
+        </h2>
+
+        <div class="icons-container">
+          <span id="bell-icon" class="icon">🔔</span>
+          <span class="icon">⏳</span>
+
+          <div id="notification-box" class="notification-box">
+            <p><strong>Notifications</strong></p>
+            <ul>
+              <li>🧩 New cognitive exercise assigned</li>
+              <li>📑 Report card updated</li>
+              <li>🎓 Assessment scheduled</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="student-card">
+          <h3>Alex Thompson <span style="float: right">Age: 7</span></h3>
+          <p id="assessmentResult">Loading...</p>
+          <button class="button view-videos" id="openVideos">📹 Videos</button>
+          <button class="button view-images" id="openImages">🖼️ Images</button>
+        </div>
+        <div id="imageModal" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="closeModal('imageModal')"
+              >&times;</span
+            >
+            <h2>Image Gallery</h2>
+            <img src="images/memory maze.jpg" />
+            <img src="images/word builder.png" />
+            <img src="images/spot.jpg" />
+          </div>
+        </div>
+        <!-- Modal for Videos -->
+        <div id="videoModal" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="closeModal('videoModal')"
+              >&times;</span
+            >
+            <h2>Video Library</h2>
+            <video controls>
+              <source src="videos/sample1.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <video controls>
+              <source src="videos/sample2.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </section>
+      <br /><br /><br /><br /><br /><br />
+      <section id="Exercises" class="Exercises-section">
+        <h1>🧩 Cognitive Exercises 🔍</h1>
+        <div class="exercises-container">
+          <div class="box" onclick="window.location.href='memorygame'">
+            Memory 🧠
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 75%"></div>
+              </div>
+              <div class="progress-text">9/12 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='attentiongame'">
+            Attention 🎯
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 40%"></div>
+              </div>
+              <div class="progress-text">4/10 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='languagegame'">
+            Language & Verbal Skills 📝
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 60%"></div>
+              </div>
+              <div class="progress-text">6/10 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='processinggame'">
+            Processing Speed ⚡
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 20%"></div>
+              </div>
+              <div class="progress-text">2/10 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='visual.html'">
+            Visual-Spatial Skills 🏞️
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 80%"></div>
+              </div>
+              <div class="progress-text">8/10 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='numerical.html'">
+            Numerical Cognition 🔢
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 50%"></div>
+              </div>
+              <div class="progress-text">5/10 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='executive.html'">
+            Executive Functioning 🏗️
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 30%"></div>
+              </div>
+              <div class="progress-text">3/10 completed</div>
+            </div>
+          </div>
+          <div
+            class="box"
+            onclick="window.location.href='problem-solving.html'"
+          >
+            Problem Solving 🧩
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 90%"></div>
+              </div>
+              <div class="progress-text">9/10 completed</div>
+            </div>
+          </div>
+          <div class="box" onclick="window.location.href='emotional.html'">
+            Emotional Recognition 😊
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress" style="width: 70%"></div>
+              </div>
+              <div class="progress-text">7/10 completed</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <br /><br /><br /><br /><br /><br />
+      <section id="assessment" class="assessment-section">
+        <h2>🎓 Assessment</h2>
+        <div class="container">
+          <div class="row">
+            <img
+              src="{{ url_for('static', filename='images/dyscalculi.jpg') }}"
+              alt="Image"
+              class="circle-image"
+            />
+            <a href="{{ url_for('dyscalculia_test') }}"
+              ><button class="assessment-button">
+                Number Sense Assessment
+              </button></a
+            >
+          </div>
+          <div class="row">
+            <img
+              src="{{ url_for('static', filename='images/dyslexia.png') }}"
+              alt="Image"
+              class="circle-image"
+            />
+            <a href="{{ url_for('dyslexia_test') }}">
+              <button class="assessment-button">
+                Reading Disorder Assessment
+              </button></a
+            >
+          </div>
+        </div>
+      </section>
+      <br /><br /><br /><br /><br /><br />
+      <section id="Report" class="Report-section">
+        <h2>📑 Report Card</h2>
+        <div class="container-1">
+          <p class="result" id="resultText"></p>
+          <p class="result">⏱ Time Taken: <span id="timeTaken"></span></p>
+          <canvas id="scoreChart"></canvas>
+          <br />
+          <button
+            onclick="restartTest()"
+            style="
+              padding: 10px 20px;
+              background: #4418c8;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+            "
+          >
+            Restart Test 🔄
+          </button>
+        </div>
+      </section>
+      <br /><br /><br />
+      <section id="nearme" class="nearme-section">
+        <h2>🤝 Counselors Near Me</h2>
+        <div class="search-container">
+          <input
+            type="text"
+            id="searchBox"
+            class="search-box"
+            placeholder="Search by locality..."
+            onkeyup="filterCounselors()"
+          />
+        </div>
+        <br />
+        <div class="counselor-list">
+          <div class="counselor-card" data-locality="Nagpur">
+            <img
+              src="{{ url_for('static', filename='images/vrundamadam.jpeg') }}"
+              alt="Counselor 1"
+              class="counselor-photo"
+            />
+            <div class="counselor-info">
+              <h3>Dr. Vrunda Desai</h3>
+              <p>Child Psychologist</p>
+              <p>📍 Nagpur, India</p>
+              <div class="stars">★★★★★</div>
+              <button onclick="contactCounselor('Dr. Vrunda Desai')">
+                Contact
+              </button>
+            </div>
+          </div>
+          <div class="counselor-card" data-locality="Nagpur">
+            <img
+              src="{{ url_for('static', filename='images/nivedita.jpg') }}"
+              alt="Counselor 2"
+              class="counselor-photo"
+            />
+            <div class="counselor-info">
+              <h3>Dr. Nivedita Jogdand</h3>
+              <p>Child Psychologist</p>
+              <p>📍 Nagpur, India</p>
+              <div class="stars">★★★★☆</div>
+              <button onclick="contactCounselor('Dr. Nivedita Jogdand')">
+                Contact
+              </button>
+            </div>
+          </div>
+          <div class="counselor-card" data-locality="Nagpur">
+            <img
+              src="{{ url_for('static', filename='images/snehalraut.png') }}"
+              alt="Counselor 3"
+              class="counselor-photo"
+            />
+            <div class="counselor-info">
+              <h3>Snehal Raut</h3>
+              <p>Special Ed Consultant</p>
+              <p>📍 Nagpur, India</p>
+              <div class="stars">★★★★☆</div>
+              <button onclick="contactCounselor('Snehal Raut')">Contact</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <br /><br /><br /><br /><br /><br /><br />
+    <footer>
+      <p>
+        &copy; 2025 MindTrack. All rights reserved.<br />Dedicated to supporting
+        neurodiverse children and their families.
+      </p>
+    </footer>
+
+    <script>
+      function scrollToSection(event, id) {
+        event.preventDefault(); // Prevent default anchor behavior
+        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+      }
+      function scrollToSection(event, id) {
+        event.preventDefault(); // Prevent default anchor behavior
+        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+      }
+
+      document
+        .getElementById("bell-icon")
+        .addEventListener("click", function () {
+          const box = document.getElementById("notification-box");
+          box.style.display = box.style.display === "block" ? "none" : "block";
+        });
+
+      // Optional: Close notification box if clicked outside
+      document.addEventListener("click", function (e) {
+        const bell = document.getElementById("bell-icon");
+        const box = document.getElementById("notification-box");
+        if (!bell.contains(e.target) && !box.contains(e.target)) {
+          box.style.display = "none";
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        let storedResult = localStorage.getItem("assessmentResult");
+        if (storedResult) {
+          let studentResultElement =
+            document.getElementById("assessmentResult");
+          if (studentResultElement) {
+            studentResultElement.innerText = storedResult;
+          }
+        }
+
+        // Load progress data from local storage if available
+        loadProgressData();
+      });
+
+      // Function to load progress data from localStorage or set demo data
+      function loadProgressData() {
+        // Demo data for exercise progress - in a real app this would come from localStorage or a database
+        const progressData = {
+          memorygame: { completed: 9, total: 12 },
+          attentiongame: { completed: 4, total: 10 },
+          languagegame: { completed: 6, total: 10 },
+          processinggame: { completed: 2, total: 10 },
+          "visual.html": { completed: 8, total: 10 },
+          "numerical.html": { completed: 5, total: 10 },
+          "executive.html": { completed: 3, total: 10 },
+          "problem-solving.html": { completed: 9, total: 10 },
+          "emotional.html": { completed: 7, total: 10 },
+        };
+
+        // Example of how to store progress data
+        // localStorage.setItem('exerciseProgress', JSON.stringify(progressData));
+
+        // You could load real data like this:
+        // const savedProgress = JSON.parse(localStorage.getItem('exerciseProgress')) || progressData;
+        // updateProgressBars(savedProgress);
+      }
+
+      function openModal(modalId) {
+        document.getElementById(modalId).style.display = "flex";
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      document
+        .getElementById("openImages")
+        .addEventListener("click", function () {
+          openModal("imageModal");
+        });
+
+      document
+        .getElementById("openVideos")
+        .addEventListener("click", function () {
+          openModal("videoModal");
+        });
+
+      // Dyscalculia results
+      document.addEventListener("DOMContentLoaded", function () {
+        const score = parseInt(localStorage.getItem("score")) || 0;
+        const totalQuestions =
+          parseInt(localStorage.getItem("totalQuestions")) || 0;
+        const timeTaken = localStorage.getItem("timeTaken") || "N/A";
+
+        function displayMessage() {
+          let message;
+          if (score === totalQuestions) {
+            message = "Excellent! You have a strong grasp of numbers! ";
+          } else if (score >= totalQuestions / 2) {
+            message = "Good job! Some areas may need improvement.";
+          } else {
+            message =
+              "The child shows signs of dyscalculia and needs further practice and professional evaluation.";
+          }
+          document.getElementById(
+            "resultText"
+          ).innerText = `Score: ${score}/${totalQuestions} - ${message}`;
+        }
+
+        if (document.getElementById("resultText")) {
+          displayMessage();
+        }
+
+        if (document.getElementById("timeTaken")) {
+          document.getElementById("timeTaken").innerText = timeTaken;
+        }
+
+        const ctx = document.getElementById("scoreChart").getContext("2d");
+
+        if (ctx && totalQuestions > 0) {
+          new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: ["Correct", "Incorrect"],
+              datasets: [
+                {
+                  data: [score, totalQuestions - score],
+                  backgroundColor: ["#28a745", "#dc3545"],
+                },
+              ],
+            },
+            options: { responsive: true },
+          });
+        }
+      });
+
+      // Restart Test Function
+      function restartTest() {
+        localStorage.clear(); // Clear previous results
+        window.location.href = "parent-login";
+      }
+      function contactCounselor(name) {
+        alert("Contacting " + name);
+      }
+      function filterCounselors() {
+        let searchValue = document
+          .getElementById("searchBox")
+          .value.toLowerCase();
+        let counselors = document.querySelectorAll(".counselor-card");
+        counselors.forEach((card) => {
+          let locality = card.getAttribute("data-locality").toLowerCase();
+          card.style.display = locality.includes(searchValue)
+            ? "block"
+            : "none";
+        });
+      }
+      function rateCounselor(star, rating) {
+        let stars = star.parentElement.querySelectorAll(".star");
+        stars.forEach((s, index) => {
+          s.classList.toggle("checked", index < rating);
+        });
+      }
+      function contactCounselor(name) {
+        alert("Contacting " + name);
+      }
+    </script>
+  </body>
+</html>

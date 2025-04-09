@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindTrack Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        background-color: #f4f4f4;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 250px;
+        background-color: #4418c8;
+        color: white;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        overflow-y: auto;
+      }
+      .sidebar h2 {
+        margin-bottom: 20px;
+        font-size: 30px;
+      }
+      .sidebar a {
+        text-decoration: none;
+        color: white;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.3s;
+        border-radius: 5px;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .content {
+        flex: 1;
+        padding: 30px;
+        margin-left: 270px;
+      }
+      .content h2 {
+        font-size: 30px;
+      }
+      .student-section h2 {
+        margin-left: 30px;
+      }
+      .student-card {
+        margin-top: 50px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin-left: 30px;
+      }
+      .student-card h3 {
+        margin: 0;
+      }
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 60%;
+        max-height: 80%;
+        overflow-y: auto;
+        text-align: center;
+      }
+      .modal img,
+      .modal video {
+        width: 100%;
+        border-radius: 10px;
+        margin-top: 10px;
+      }
+      .close {
+        cursor: pointer;
+        color: red;
+        font-size: 24px;
+        font-weight: bold;
+        float: right;
+      }
+      .upload-section {
+        margin-top: 50px;
+      }
+      .upload-section h2 {
+        margin-left: 30px;
+      }
+      .upload-section p {
+        margin-left: 30px;
+      }
+      .btn {
+        background: #4418c8;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .btn:hover {
+        background: #1565c0;
+      }
+      .button {
+        padding: 12px 20px;
+        font-size: 1rem;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .view-videos {
+        background: #4418c8;
+      }
+      .view-videos:hover {
+        background: #1565c0;
+      }
+      .view-images {
+        background: #4418c8;
+      }
+      .view-images:hover {
+        background: #1565c0;
+      }
+      .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+      }
+      .login-box {
+        margin-left: 30px;
+        margin-top: 50px;
+        display: flex;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        width: 900px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
+      }
+      .left,
+      .right {
+        width: 50%;
+        padding: 40px;
+      }
+      .right img {
+        width: 400px;
+      }
+      .left {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .left h2 {
+        margin-bottom: 20px;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .Assessment-section h2 {
+        margin-left: 30px;
+      }
+      .Assessment-section p {
+        margin-left: 30px;
+      }
+      table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        background-color: white;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 10px;
+        text-align: left;
+      }
+      .options {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+      .option {
+        font-size: 30px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .option:hover {
+        transform: scale(1.2);
+      }
+      .selected {
+        opacity: 0.1;
+      }
+
+      #result {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      footer {
+        background-color: #4418c8;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        position: relative;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>🧠MindTrack</h2>
+      <br />
+      <a href="#students">👨‍🎓 Students</a>
+      <br />
+      <a href="#upload" onclick="scrollToSection(event, 'upload')"
+        >📤 Upload Media</a
+      >
+      <br />
+      <a href="#assessments" onclick="scrollToSection(event, 'Assessment')"
+        >📑 Assessments</a
+      >
+    </div>
+    <div class="content">
+      <section id="students" class="student-section">
+        <h2>Teacher's Portal</h2>
+
+        <div class="student-card">
+          <h3>Alex Thompson <span style="float: right">Age: 7</span></h3>
+          <p id="assessmentResult">
+            Shows signs of difficulty in maintaining focus during reading
+            sessions.
+          </p>
+          <button class="button view-videos" id="openVideos">📹 Videos</button>
+          <button class="button view-images" id="openImages">🖼️ Images</button>
+        </div>
+        <div id="imageModal" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="closeModal('imageModal')"
+              >&times;</span
+            >
+            <h2>Image Gallery</h2>
+            <img src="images/memory maze.jpg" />
+            <img src="images/word builder.png" />
+            <img src="images/spot.jpg" />
+          </div>
+        </div>
+        <!-- Modal for Videos -->
+        <div id="videoModal" class="modal">
+          <div class="modal-content">
+            <span class="close" onclick="closeModal('videoModal')"
+              >&times;</span
+            >
+            <h2>Video Library</h2>
+            <video controls>
+              <source src="videos/sample1.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <video controls>
+              <source src="videos/sample2.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </section>
+      <br /><br /><br /><br /><br />
+
+      <section id="upload" class="upload-section">
+        <h2>Upload Media</h2>
+        <p>Upload videos and images related to student progress.</p>
+        <div class="login-container">
+          <div class="login-box">
+            <div class="left">
+              <h2>Student Details</h2>
+              <form id="uploadForm" enctype="multipart/form-data">
+                <label for="studentID">Student ID:</label>
+                <input type="text" id="studentID" name="studentID" required />
+
+                <label for="studentName">Name of Student:</label>
+                <input
+                  type="text"
+                  id="studentName"
+                  name="studentName"
+                  required
+                />
+
+                <label for="password">Video of Student:</label>
+                <input type="file" id="password" required />
+
+                <label for="handwritingImage">Image of Handwriting:</label>
+                <input
+                  type="file"
+                  id="handwritingImage"
+                  name="handwritingImage"
+                  accept="image/*"
+                  required
+                />
+                <br /><br />
+                <center>
+                  <button type="submit" class="btn" id="takeTest">
+                    Take a test
+                  </button>
+                </center>
+              </form>
+
+              <p id="predictionResult"></p>
+
+              <br /><br />
+            </div>
+
+            <div class="right">
+              <img
+                src="{{ url_for('static', filename='images/t.jpg') }}"
+                alt="Illustration"
+              />
+            </div>
+          </div>
+        </div>
+        <br /><br /><br />
+      </section>
+      <br /><br /><br /><br /><br />
+      <section id="Assessment" class="Assessment-section">
+        <h2>Assessment for Teacher</h2>
+        <p>
+          Submit your response to find out if the child has a neurodiverse
+          condition or not.
+        </p>
+        <br /><br />
+        <table>
+          <tr>
+            <th>Question</th>
+            <th>Response</th>
+          </tr>
+          <tr>
+            <td>Does the child struggle with concentration in class?</td>
+            <td class="options">
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✓"
+                >✅</span
+              >
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✗"
+                >❌</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>Does the child show repetitive behavior?</td>
+            <td class="options">
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✓"
+                >✅</span
+              >
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✗"
+                >❌</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>Does the child not respond to their name?</td>
+            <td class="options">
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✓"
+                >✅</span
+              >
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✗"
+                >❌</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>Does the child have difficulty in understanding emotions?</td>
+            <td class="options">
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✓"
+                >✅</span
+              >
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✗"
+                >❌</span
+              >
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Does the child overreact or underreact to sensory stimuli, such as
+              loud noises, bright lights, or certain textures?
+            </td>
+            <td class="options">
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✓"
+                >✅</span
+              >
+              <span
+                class="option"
+                onclick="toggleSelection(this)"
+                data-value="✗"
+                >❌</span
+              >
+            </td>
+          </tr>
+        </table>
+        <center>
+          <button class="btn" onclick="getResult()">Submit</button>
+          <p id="result"></p>
+        </center>
+      </section>
+    </div>
+    <br /><br /><br /><br /><br />
+    <footer>
+      <p>
+        &copy; 2025 MindTrack. All rights reserved.<br />Dedicated to supporting
+        neurodiverse children and their families.
+      </p>
+    </footer>
+    <script>
+      function scrollToSection(event, id) {
+        event.preventDefault(); // Prevent default anchor behavior
+        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+      }
+      function scrollToSection(event, id) {
+        event.preventDefault(); // Prevent default anchor behavior
+        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+      }
+      function openModal(modalId) {
+        document.getElementById(modalId).style.display = "flex";
+      }
+
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      document
+        .getElementById("openImages")
+        .addEventListener("click", function () {
+          openModal("imageModal");
+        });
+
+      document
+        .getElementById("openVideos")
+        .addEventListener("click", function () {
+          openModal("videoModal");
+        });
+
+      function toggleSelection(element) {
+        let parent = element.parentElement;
+        let options = parent.getElementsByClassName("option");
+        for (let opt of options) {
+          opt.classList.remove("selected");
+        }
+        element.classList.add("selected");
+      }
+
+      function getResult() {
+        let selectedOptions = document.querySelectorAll(".selected");
+        let selectedValues = Array.from(selectedOptions).map((opt) =>
+          opt.getAttribute("data-value")
+        );
+        let resultText = "";
+
+        if (selectedValues.length < 5) {
+          resultText = "Please answer all questions.";
+        } else if (selectedValues.every((value) => value === "✓")) {
+          resultText =
+            "Based on the evaluation, there are indications that the child may exhibit traits associated with a neurodiverse condition.";
+        } else if (selectedValues.every((value) => value === "✗")) {
+          resultText =
+            "Great news! The child shows no signs of a neurodiverse condition.";
+        } else {
+          resultText =
+            "The assessment indicates that child has some signs of neurodiverse traits.";
+        }
+
+        // Update result on the assessment page
+        document.getElementById("result").innerText = resultText;
+
+        // Store result in localStorage
+        localStorage.setItem("assessmentResult", resultText);
+
+        // Update result on the student dashboard card
+        let studentResultElement = document.getElementById("assessmentResult");
+        if (studentResultElement) {
+          studentResultElement.innerText = resultText;
+        }
+      }
+      // Machine learning model
+      document
+        .getElementById("takeTest")
+        .addEventListener("click", async function (event) {
+          event.preventDefault();
+
+          let formData = new FormData();
+          formData.append(
+            "image",
+            document.getElementById("handwritingImage").files[0]
+          );
+
+          try {
+            let response = await fetch("http://127.0.0.1:5000/predict", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            let result = await response.json();
+            console.log("Server Response:", result); // Debugging
+
+            if (result.prediction) {
+              document.getElementById(
+                "predictionResult"
+              ).innerText = `Prediction: ${
+                result.prediction
+              } (Confidence: ${result.confidence.toFixed(2)})`;
+            } else {
+              document.getElementById("predictionResult").innerText =
+                "Error: Prediction not received!";
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            document.getElementById("predictionResult").innerText =
+              "Error in prediction. Check console for details.";
+          }
+        });
+    </script>
+  </body>
+</html>

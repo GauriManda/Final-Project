@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Builder</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* General styling for a fun, colorful kid-friendly game */
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: black;
+        text-align: center;
+        padding: 30px;
+      }
+
+      h1 {
+        font-size: 2.5em;
+        color: #ff6347;
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 1.2em;
+        color: #555;
+        margin: 20px 0;
+      }
+
+      /* Styling for buttons */
+      button {
+        font-size: 1.5em;
+        padding: 15px 30px;
+        margin: 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 15px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        background-color: #32cd32;
+        color: white;
+      }
+
+      button:hover {
+        background-color: #28a745;
+        transform: scale(1.1);
+      }
+
+      button:active {
+        transform: scale(0.95);
+      }
+
+      #check-button {
+        background-color: #ff6347;
+      }
+
+      #try-again {
+        background-color: #f1c40f;
+      }
+
+      #next-button {
+        background-color: #3498db;
+      }
+
+      /* Home button styling */
+      #home-button {
+        font-size: 1.5em;
+        padding: 10px 20px;
+        margin: 10px 0;
+        background-color: #ffcc00;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 15px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      #home-button:hover {
+        background-color: #f39c12;
+        transform: scale(1.1);
+      }
+
+      #home-button:active {
+        transform: scale(0.95);
+      }
+
+      /* Styling for the jumbled letters */
+      .letters-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+
+      .letter {
+        font-size: 2em;
+        margin: 5px;
+        padding: 10px 15px;
+        border: 2px solid #ff6347;
+        background-color: grey;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: transform 0.2s ease;
+      }
+
+      .letter:hover {
+        transform: scale(1.2);
+        background-color: #ff6347;
+        color: white;
+      }
+
+      /* Timer styling */
+      .timer p {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .built-word h2 {
+        font-size: 2em;
+        color: #ff6347;
+      }
+
+      /* Styling for the message */
+      #message {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #ff6347;
+        margin-top: 20px;
+      }
+
+      /* Fun background image for a playful look */
+      .game-container {
+        background-color: #fff;
+        border-radius: 25px;
+        padding: 30px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 600px;
+        margin: 50px auto;
+        background-color: antiquewhite;
+      }
+
+      /* Add some spacing around elements */
+      b,
+      i,
+      u {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <!-- Home Button -->
+      <button id="home-button" onclick="goHome()">🏠 Home</button>
+
+      <h1>Jumble Word Game</h1>
+      <p>Unscramble the letters to form a word!</p>
+
+      <!-- Start Button -->
+      <button id="start-button" onclick="startGame()">🎮 Start Game</button>
+
+      <!-- Jumbled Letters -->
+      <div class="letters-container" id="letters-container">
+        <!-- Dynamically populated -->
+      </div>
+
+      <!-- Word to be built by clicking letters -->
+      <div class="built-word">
+        <h2>Built Word: <span id="built-word">_ _ _ _</span></h2>
+      </div>
+
+      <!-- Check Word button -->
+      <button id="check-button" onclick="checkWord()">✅ Check Word</button>
+
+      <!-- Try Again button -->
+      <button id="try-again" onclick="tryAgain()" style="display: none">
+        🔄 Try Again
+      </button>
+
+      <!-- Next button -->
+      <button id="next-button" onclick="nextWord()" style="display: none">
+        ➡️ Next
+      </button>
+
+      <p id="message"></p>
+
+      <!-- Timer -->
+      <div class="timer">
+        <p>⏰ Time: <span id="time">0</span> seconds</p>
+      </div>
+    </div>
+
+    <script>
+      let correctWord;
+      let jumbledWord;
+      let timer;
+      let timeElapsed = 0;
+      let builtWord = "";
+
+      // Array of 3-4 letter words
+      const words = ["CAT", "DOG", "BAT", "BED", "BEE", "MAT", "HAT", "JUG"];
+
+      function getRandomWord() {
+        const randomIndex = Math.floor(Math.random() * words.length);
+        return words[randomIndex];
+      }
+
+      function scrambleWord(word) {
+        return word
+          .split("")
+          .sort(() => Math.random() - 0.5)
+          .join("");
+      }
+
+      function startGame() {
+        // Hide the start button and show the game elements
+        document.getElementById("start-button").style.display = "none";
+        document.getElementById("check-button").style.display = "inline-block";
+        document.getElementById("try-again").style.display = "none"; // Hide try again button initially
+        document.getElementById("next-button").style.display = "none"; // Hide next button initially
+
+        // Start the timer
+        startTimer();
+
+        // Pick a random word and scramble it
+        correctWord = getRandomWord();
+        jumbledWord = scrambleWord(correctWord);
+
+        // Display the jumbled word (letters that can be clicked)
+        const lettersContainer = document.getElementById("letters-container");
+        lettersContainer.innerHTML = ""; // Clear any previous letters
+        jumbledWord.split("").forEach((letter) => {
+          const button = document.createElement("button");
+          button.classList.add("letter");
+          button.innerText = letter;
+          button.onclick = () => addLetterToBuiltWord(letter);
+          lettersContainer.appendChild(button);
+        });
+      }
+
+      function addLetterToBuiltWord(letter) {
+        builtWord += letter;
+        document.getElementById("built-word").innerText = builtWord;
+      }
+
+      function checkWord() {
+        if (builtWord.toUpperCase() === correctWord) {
+          document.getElementById("message").innerText =
+            "Congratulations! You solved it!";
+          document.getElementById("message").style.color = "#32cd32";
+          stopTimer();
+          document.getElementById("next-button").style.display = "inline-block"; // Show next button
+          document.getElementById("check-button").style.display = "none"; // Hide check button
+        } else {
+          document.getElementById("message").innerText = "Oops! Try again!";
+          document.getElementById("message").style.color = "#ff6347";
+          document.getElementById("try-again").style.display = "inline-block"; // Show try again button
+          document.getElementById("check-button").style.display = "none"; // Hide check button
+        }
+      }
+
+      function tryAgain() {
+        builtWord = ""; // Reset the built word
+        document.getElementById("built-word").innerText = builtWord;
+        document.getElementById("message").innerText = "";
+
+        // Display the same jumbled letters again
+        const lettersContainer = document.getElementById("letters-container");
+        lettersContainer.innerHTML = "";
+        jumbledWord.split("").forEach((letter) => {
+          const button = document.createElement("button");
+          button.classList.add("letter");
+          button.innerText = letter;
+          button.onclick = () => addLetterToBuiltWord(letter);
+          lettersContainer.appendChild(button);
+        });
+
+        // Hide try again button and show check button
+        document.getElementById("try-again").style.display = "none";
+        document.getElementById("check-button").style.display = "inline-block";
+
+        // Reset the timer to give the child more time to try again
+        timeElapsed = 0;
+        document.getElementById("time").innerText = timeElapsed;
+        startTimer(); // Restart the timer
+      }
+      function goHome() {
+        // Reload the page to go back to the home/start screen.
+        window.location.reload();
+      }
+
+      function nextWord() {
+        builtWord = ""; // Reset the built word
+        document.getElementById("built-word").innerText = builtWord;
+        document.getElementById("message").innerText = "";
+
+        // Pick a new word and scramble it for "Next"
+        correctWord = getRandomWord();
+        jumbledWord = scrambleWord(correctWord);
+
+        // Display the new jumbled letters
+        const lettersContainer = document.getElementById("letters-container");
+        lettersContainer.innerHTML = "";
+        jumbledWord.split("").forEach((letter) => {
+          const button = document.createElement("button");
+          button.classList.add("letter");
+          button.innerText = letter;
+          button.onclick = () => addLetterToBuiltWord(letter);
+          lettersContainer.appendChild(button);
+        });
+
+        // Show the check button again and hide the next button
+        document.getElementById("check-button").style.display = "inline-block";
+        document.getElementById("next-button").style.display = "none";
+
+        // Reset the timer and game state
+        timeElapsed = 0;
+        document.getElementById("time").innerText = timeElapsed;
+        startTimer(); // Restart the timer for the next word
+      }
+
+      function startTimer() {
+        clearInterval(timer); // Clear any previous timer
+        timer = setInterval(function () {
+          timeElapsed++;
+          document.getElementById("time").innerText = timeElapsed;
+        }, 1000);
+      }
+
+      function stopTimer() {
+        clearInterval(timer);
+      }
+
+      // Initialize the game when the page loads
+      window.onload = function () {
+        // Game will start after the user clicks "Start"
+      };
+    </script>
+  </body>
+</html>

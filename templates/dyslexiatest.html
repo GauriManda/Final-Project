@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dyscalculia Screening Test</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #e3e3f6;
+            margin: 0;
+            padding: 0;
+          }
+          .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 50px;
+          }
+          .question {
+            font-size: 18px;
+            margin-bottom: 20px;
+          }
+          .options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.options button {
+  width: 80px;
+  height: 80px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: #4418c8;
+  color: white;
+  font-size: 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex: 0 1 calc(25% - 10px); /* 4 in a row with spacing */
+}
+
+.options button:hover {
+  background: #3620a3;
+}
+
+          .result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .hidden {
+            display: none;
+          }
+          .timer {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+          }
+          .result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          canvas {
+            max-width: 300px;
+            margin: 20px auto;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>🧮 Dyslexia Screening Test</h1>
+          <div id="instructions">
+            <p><strong>📋 Test Guidelines:</strong></p>
+            <ul style="text-align: left">
+              <li>✔️ The test consists of multiple-choice questions (MCQs).</li>
+              <li>
+                ✔️ Each question has 3 or 4 answer choices. Select the most
+                appropriate answer.
+              </li>
+    
+             
+              <li>
+                ✔️ Parents or teachers can assist in reading the questions if
+                necessary but should not provide hints.
+              </li>
+            </ul>
+            <p><strong>📌 Important Notes:</strong></p>
+            <ul style="text-align: left">
+              <li>
+                👉 This is not a diagnostic test but a screening tool. If
+                difficulties are observed, consult an expert.
+              </li>
+              <li>
+                👉 Answer honestly to get an accurate understanding of strengths and
+                challenges.
+              </li>
+              <li>
+                👉 Focus on understanding numbers, patterns, and calculations rather
+                than memorization.
+              </li>
+            </ul>
+            <button
+              onclick="startTest()"
+              style="
+                padding: 10px 20px;
+                font-size: 16px;
+                background: #4418c8;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+              "
+            >
+              Start Test 🚀
+            </button>
+          </div>
+          <div id="quiz" class="hidden">
+            <p class="timer">🕑 Time: <span id="time">00:00</span></p>
+            <p class="question" id="question"></p>
+            <div class="options" id="options"></div>
+          </div>
+          <div id="resultSection" class="hidden">
+            <canvas id="scoreChart"></canvas>
+            <p id="resultText" class="result"></p>
+          </div>
+        </div>
+    
+        <script>
+          const questions = [
+            {
+              question:
+                " Which letter is ‘b’?",
+              options: ["d", "p", "b", "q"],
+              answer: "b",
+            },
+            {
+              question: "Which letter is ‘d’?",
+              options: ["d", "p", "q", "b"],
+              answer: "d",
+            },
+            {
+              question: "Which one is ‘p’?",
+              options: ["d", "p", "q", "b"],
+              answer: "p",
+            },
+            {
+              question: "Which one is ‘q’?",
+              options: ["d", "p", "q", "b"],
+              answer: "q",
+            },
+            {
+              question: "Which number is ‘6’?",
+              options: ["9", "8", "6", "3"],
+              answer: "6",
+            },
+            {
+              question: "Which number is ‘9’?",
+              options: ["7", "12", "10", "9"],
+              answer: "9",
+            },
+            {
+              question: "What comes after ‘A, B, C, _’?",
+              options: ["B", "D", "A", "C"],
+              answer: "D",
+            },
+            {
+              question: "What comes after ‘1, 2, 3, _’?",
+              options: ["2", "4", "6", "9"],
+              answer: "4",
+            },
+            {
+              question: "Which word sounds like ‘bat’?",
+              options: ["Mat", "Bag", "Bit", "Bet"],
+              answer: "Mat",
+            },
+            {
+              question:
+                "Which word sounds like ‘dog’?",
+
+               options: ["Log", "Dug", "Ball", "Duck"],
+              answer: "Log",
+            },
+            
+          ];
+    
+          let currentQuestion = 0;
+          let score = 0;
+          let startTime, timerInterval;
+    
+          function startTest() {
+            document.getElementById("instructions").style.display = "none";
+            document.getElementById("quiz").style.display = "block";
+            startTime = new Date().getTime();
+            timerInterval = setInterval(updateTimer, 1000);
+            loadQuestion();
+          }
+    
+          function updateTimer() {
+            let elapsedTime = new Date().getTime() - startTime;
+            let seconds = Math.floor((elapsedTime / 1000) % 60);
+            let minutes = Math.floor((elapsedTime / 1000 / 60) % 60);
+            document.getElementById("time").innerText = `${String(minutes).padStart(
+              2,
+              "0"
+            )}:${String(seconds).padStart(2, "0")}`;
+          }
+    
+          function loadQuestion() {
+            if (currentQuestion < questions.length) {
+              document.getElementById("question").innerText =
+                questions[currentQuestion].question;
+              const optionsContainer = document.getElementById("options");
+              optionsContainer.innerHTML = "";
+    
+              questions[currentQuestion].options.forEach((option) => {
+                const button = document.createElement("button");
+                button.innerText = option;
+                button.onclick = () => checkAnswer(option);
+                optionsContainer.appendChild(button);
+              });
+            } else {
+              document.getElementById("quiz").style.display = "none"; // Hide quiz
+              document.getElementById("resultSection").style.display = "block"; // Show result
+              drawChart(); // Call function to draw chart
+              displayMessage(); // Display result message
+            }
+          }
+    
+          function checkAnswer(selected) {
+            if (selected === questions[currentQuestion].answer) {
+              score++;
+            }
+            currentQuestion++;
+            loadQuestion();
+          }
+          function drawChart() {
+            const ctx = document.getElementById("scoreChart").getContext("2d");
+            new Chart(ctx, {
+              type: "doughnut",
+              data: {
+                labels: ["Correct", "Incorrect"],
+                datasets: [
+                  {
+                    data: [score, questions.length - score],
+                    backgroundColor: ["#28a745", "#dc3545"],
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+              },
+            });
+          }
+    
+          function displayMessage() {
+            let message;
+            if (score === questions.length) {
+              message = "Excellent! You have a strong grasp of numbers! A";
+            } else if (score >= questions.length / 2) {
+              message = "Good job! Some areas may need improvement.";
+            } else {
+              message = "Consider further practice or professional assessment.";
+            }
+            document.getElementById(
+              "resultText"
+            ).innerText = `Score: ${score}/${questions.length} - ${message}`;
+          }
+          
+      function checkAnswer(selected) {
+        if (selected === questions[currentQuestion].answer) {
+          score++;
+        }
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          loadQuestion();
+        } else {
+          clearInterval(timerInterval); // Stop timer
+          const elapsedTime = document.getElementById("time").innerText;
+    
+          // Store results in localStorage
+          localStorage.setItem("score", score);
+          localStorage.setItem("totalQuestions", questions.length);
+          localStorage.setItem("timeTaken", elapsedTime);
+    
+          // Redirect to result page
+          window.location.href = "parent-login";
+        }
+      }
+    </script>
+    
+        </script>
+      </body>
+    </html>
+    
+  </body>
+</html>

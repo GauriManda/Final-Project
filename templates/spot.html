@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spot the Difference Game</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        background-color: black; /* Black background */
+        color: Black;
+      }
+      .game-wrapper {
+        background-color: antiquewhite; /* White container for game UI */
+        padding: 20px;
+        border-radius: 10px;
+        display: inline-block;
+        text-align: center;
+        box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+      }
+      .game-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+      .image-container {
+        position: relative;
+      }
+      img {
+        width: 400px;
+        height: auto;
+        border: 2px solid black;
+      }
+      .difference {
+        position: absolute;
+        border: 2px solid red;
+        border-radius: 50%;
+      }
+      #timer {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 20px;
+      }
+      .buttons {
+        margin-top: 20px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin: 5px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: white;
+      }
+      #startButton {
+        background-color: green;
+      }
+      #doneButton {
+        background-color: blue;
+      }
+      #homeButton {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-wrapper">
+      <h1>Spot the Difference</h1>
+      <p>Click on the differences between the two images!</p>
+      <div class="buttons">
+        <button id="startButton">Start</button>
+        <button id="homeButton">Home</button>
+      </div>
+      <div id="timer">Time: 0s</div>
+      <div class="game-container">
+        <div class="image-container" id="image1">
+          <img src="images/original.png" alt="Original Image" />
+        </div>
+        <div class="image-container" id="image2">
+          <img src="images/modified.png" alt="Modified Image" />
+        </div>
+      </div>
+      <div class="buttons">
+        <button id="doneButton">Done</button>
+      </div>
+    </div>
+
+    <script>
+      let startTime;
+      let timerInterval;
+      const timerElement = document.getElementById("timer");
+      const startButton = document.getElementById("startButton");
+
+      function startGame() {
+        startTime = Date.now();
+        timerElement.innerText = "Time: 0s";
+        timerInterval = setInterval(() => {
+          let elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+          timerElement.innerText = `Time: ${elapsedTime}s`;
+        }, 1000);
+        startButton.disabled = true;
+      }
+
+      startButton.addEventListener("click", startGame);
+
+      const differences = [
+        { x: 50, y: 80 },
+        { x: 200, y: 150 },
+        { x: 320, y: 250 },
+      ];
+      let foundDifferences = 0;
+
+      const image2 = document.getElementById("image2");
+      differences.forEach((diff) => {
+        let marker = document.createElement("div");
+        marker.className = "difference";
+        marker.style.width = "30px";
+        marker.style.height = "30px";
+        marker.style.left = `${diff.x}px`;
+        marker.style.top = `${diff.y}px`;
+        marker.style.display = "none";
+        image2.appendChild(marker);
+      });
+
+      image2.addEventListener("click", function (event) {
+        if (!startTime) return; // Ensure game has started
+
+        const rect = image2.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        let found = false;
+        differences.forEach((diff, index) => {
+          if (Math.abs(x - diff.x) < 20 && Math.abs(y - diff.y) < 20) {
+            let markers = document.getElementsByClassName("difference");
+            markers[index].style.display = "block";
+            foundDifferences++;
+            found = true;
+          }
+        });
+
+        if (foundDifferences === differences.length) {
+          clearInterval(timerInterval);
+          alert(
+            `Congratulations! You found all differences in ${Math.floor(
+              (Date.now() - startTime) / 1000
+            )} seconds!`
+          );
+        }
+      });
+
+      document.getElementById("doneButton").addEventListener("click", () => {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          alert(
+            `Game stopped! You took ${Math.floor(
+              (Date.now() - startTime) / 1000
+            )} seconds.`
+          );
+        }
+      });
+
+      document.getElementById("homeButton").addEventListener("click", () => {
+        location.reload();
+      });
+    </script>
+  </body>
+</html>

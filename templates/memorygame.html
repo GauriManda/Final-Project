@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Excerises</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #e3e3f6;
+      }
+
+      h1 {
+        text-align: center;
+        padding: 40px 0;
+        color: #333;
+      }
+
+      .card-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 0 40px 40px;
+      }
+
+      .card {
+        margin-top: 100px;
+        background-color: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+      }
+
+      .card:hover {
+        transform: scale(1.03);
+      }
+
+      .card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
+      .card h2 {
+        padding: 15px;
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+      }
+      footer {
+        background-color: #4418c8;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        position: relative;
+        width: 100%;
+      }
+
+      @media (max-width: 768px) {
+        .card-container {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card-container">
+      <div class="card" onclick="window.location.href='memorymaze'">
+        <img
+          src="{{ url_for('static', filename='images/memory maze.jpg') }}"
+          alt="Image 1"
+        />
+        <h2>Memory Maze</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/word builder.png') }}"
+          alt="Image 2"
+        />
+        <h2>Word Builder</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/numberladder.jpg') }}"
+          alt="Image 3"
+        />
+        <h2>Number Ladder</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/matchingcard.jpg') }}"
+          alt="Image 4"
+        />
+        <h2>Matching Card</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/colourmode.jpg') }}"
+          alt="Image 5"
+        />
+        <h2>Colour Mode Memory</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/simon.jpg') }}"
+          alt="Image 6"
+        />
+        <h2>Simon Says</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/findmissing.jpg') }}"
+          alt="Image 6"
+        />
+        <h2>Find the missing one</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/sequence.png') }}"
+          alt="Image 6"
+        />
+        <h2>Picture Sequence</h2>
+      </div>
+      <div class="card">
+        <img
+          src="{{ url_for('static', filename='images/chain.png') }}"
+          alt="Image 6"
+        />
+        <h2>Story Chain</h2>
+      </div>
+    </div>
+    <br /><br /><br /><br /><br /><br />
+    <footer>
+      <p>
+        &copy; 2025 MindTrack. All rights reserved.<br />Dedicated to supporting
+        neurodiverse children and their families.
+      </p>
+    </footer>
+  </body>
+</html>

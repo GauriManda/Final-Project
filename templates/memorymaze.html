@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Maze Game</title>
+    <style>
+      body {
+        font-family: "Comic Sans MS", cursive, sans-serif;
+        background: linear-gradient(to right, #a18cd1, #fbc2eb);
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        color: #4169e1;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .game-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: white;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .row-label {
+        font-size: 18px;
+        font-weight: bold;
+        color: #4169e1;
+        margin: 15px 0 5px 0;
+        text-align: left;
+        padding-left: 20px;
+      }
+
+      .sequence-row,
+      .player-row {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 10px 0 20px 0;
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      .sequence-row {
+        background-color: rgba(165, 216, 255, 0.2);
+      }
+
+      .player-row {
+        background-color: rgba(255, 192, 203, 0.2);
+      }
+
+      /* Card container */
+      .card {
+        width: 100px;
+        height: 150px;
+        perspective: 1000px;
+        margin: 0 5px;
+      }
+
+      /* Card inner container for 3D flip effect */
+      .card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+      }
+
+      /* Flipped state */
+      .card.flipped .card-inner {
+        transform: rotateY(180deg);
+      }
+
+      /* Card front and back faces */
+      .card-front,
+      .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden; /* Safari */
+        backface-visibility: hidden;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Card back (initial face) */
+      .card-back {
+        background-color: #ffb6c1;
+        background-image: linear-gradient(
+          45deg,
+          #ffb6c1 25%,
+          #ffc0cb 25%,
+          #ffc0cb 50%,
+          #ffb6c1 50%,
+          #ffb6c1 75%,
+          #ffc0cb 75%,
+          #ffc0cb 100%
+        );
+        background-size: 20px 20px;
+      }
+
+      /* Card front (symbol face) */
+      .card-front {
+        background-color: #7b68ee;
+        color: white;
+        transform: rotateY(180deg);
+      }
+
+      /* Player selection cards */
+      .player-card {
+        width: 100px;
+        height: 150px;
+        border-radius: 10px;
+        margin: 0 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #7b68ee;
+        color: white;
+        font-size: 48px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, box-shadow 0.3s;
+      }
+
+      .player-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .player-card.selected {
+        box-shadow: 0 0 0 4px #4caf50, 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .player-card.wrong {
+        box-shadow: 0 0 0 4px #f44336, 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .controls {
+        margin: 20px 0;
+      }
+
+      button {
+        background-color: #4169e1;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #1e90ff;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      .score {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+
+      .level {
+        font-weight: bold;
+        color: #4169e1;
+      }
+
+      .message {
+        height: 30px;
+        font-size: 20px;
+        color: #ff6347;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .progress-display {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 15px 0;
+        font-size: 18px;
+      }
+
+      .progress-display .dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #ddd;
+        display: inline-block;
+      }
+
+      .progress-display .dot.correct {
+        background-color: #4caf50;
+      }
+
+      .progress-display .dot.incorrect {
+        background-color: #f44336;
+      }
+
+      .game-over {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .game-over-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        max-width: 80%;
+        max-height: 80%;
+        overflow-y: auto;
+      }
+
+      .button-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #f00;
+        border-radius: 50%;
+        animation: confetti-fall 5s linear infinite;
+      }
+
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(-100vh) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* Analytics styles */
+      .analytics-container {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+      }
+
+      .analytics-section {
+        margin-bottom: 30px;
+        width: 100%;
+      }
+
+      .analytics-title {
+        color: #4169e1;
+        margin-bottom: 15px;
+        font-size: 20px;
+      }
+
+      .progress-bar-container {
+        width: 100%;
+        height: 30px;
+        background-color: #e9ecef;
+        border-radius: 15px;
+        margin: 15px 0;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #7b68ee, #4169e1);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        transition: width 1s ease;
+      }
+
+      .chart-container {
+        width: 100%;
+        height: 300px;
+        margin: 15px 0;
+        position: relative;
+      }
+
+      .back-to-results {
+        background-color: #6c757d;
+        margin-top: 20px;
+      }
+
+      .back-to-results:hover {
+        background-color: #5a6268;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>Memory Maze Game</h1>
+
+      <div class="score">
+        Level: <span class="level">1</span> | Cards:
+        <span class="card-count">3</span> | Score: <span class="points">0</span>
+      </div>
+
+      <div class="message">Click Start Game to begin!</div>
+
+      <div class="row-label">Watch this sequence:</div>
+      <div class="sequence-row"></div>
+
+      <div class="progress-display"></div>
+
+      <div class="row-label">
+        Your turn - Click symbols in the correct order:
+      </div>
+      <div class="player-row"></div>
+
+      <div class="controls">
+        <button id="start-btn">Start Game</button>
+        <button id="reset-btn">Reset Game</button>
+      </div>
+
+      <div class="instructions">
+        <h3>How to Play:</h3>
+        <p>1. Click "Start Game" to begin.</p>
+        <p>
+          2. Watch the cards in the top row as they flip to reveal symbols in
+          sequence.
+        </p>
+        <p>
+          3. After the sequence finishes, click the symbols in the bottom row in
+          the same order.
+        </p>
+        <p>
+          4. Each correct sequence completes a level and increases the
+          difficulty!
+        </p>
+      </div>
+    </div>
+
+    <div class="game-over">
+      <div class="game-over-content">
+        <h2>Game Over!</h2>
+        <p>Your final score: <span class="final-score">0</span></p>
+        <p>You reached level: <span class="final-level">1</span></p>
+
+        <div class="button-container">
+          <button id="play-again-btn">Play Again</button>
+          <button id="analyze-results-btn">Analyze Results</button>
+        </div>
+
+        <div class="analytics-container" id="analytics-container">
+          <h3>Performance Analysis</h3>
+
+          <div class="analytics-section">
+            <div class="analytics-title">Level Completion</div>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="level-progress-bar">0%</div>
+            </div>
+            <p>
+              You completed <span class="completed-levels">0</span> out of
+              <span class="max-levels">10</span> levels
+            </p>
+          </div>
+
+          <div class="analytics-section">
+            <div class="analytics-title">Points Earned by Level</div>
+            <div class="chart-container">
+              <canvas id="points-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="analytics-section">
+            <div class="analytics-title">Response Time Comparison</div>
+            <div class="chart-container">
+              <canvas id="response-time-chart"></canvas>
+            </div>
+            <p class="chart-description">
+              This chart compares average response times between typical
+              children and neurodiverse children across difficulty levels.
+            </p>
+          </div>
+
+          <button class="back-to-results" id="back-to-results-btn">
+            Back to Results
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Make sure Chart.js loads properly -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Verify Chart.js loading
+        if (typeof Chart === "undefined") {
+          console.error("Chart.js failed to load");
+          // Add a fallback message
+          document.querySelectorAll(".chart-container").forEach((container) => {
+            container.innerHTML =
+              '<p style="color: red">Charts failed to load. Please check your internet connection.</p>';
+          });
+        }
+
+        // Game variables
+        const symbols = [
+          "🦄",
+          "🌈",
+          "🚀",
+          "🌟",
+          "🍦",
+          "🎈",
+          "🦊",
+          "🐬",
+          "🎁",
+          "🦁",
+          "🐢",
+          "🦋",
+        ];
+        let level = 1;
+        let cardCount = 3;
+        let score = 0;
+        let sequence = [];
+        let playerSequence = [];
+        let canClick = false;
+        let gameActive = false;
+        let currentlyFlipping = false;
+        let responseTimes = [];
+        let lastSequenceEndTime = 0;
+        let levelScores = [];
+        let levelResponseTimes = [];
+
+        // DOM elements
+        const sequenceRow = document.querySelector(".sequence-row");
+        const playerRow = document.querySelector(".player-row");
+        const progressDisplay = document.querySelector(".progress-display");
+        const startBtn = document.getElementById("start-btn");
+        const resetBtn = document.getElementById("reset-btn");
+        const playAgainBtn = document.getElementById("play-again-btn");
+        const analyzeResultsBtn = document.getElementById(
+          "analyze-results-btn"
+        );
+        const backToResultsBtn = document.getElementById("back-to-results-btn");
+        const messageEl = document.querySelector(".message");
+        const levelEl = document.querySelector(".level");
+        const cardCountEl = document.querySelector(".card-count");
+        const scoreEl = document.querySelector(".points");
+        const gameOverScreen = document.querySelector(".game-over");
+        const finalScoreEl = document.querySelector(".final-score");
+        const finalLevelEl = document.querySelector(".final-level");
+        const analyticsContainer = document.getElementById(
+          "analytics-container"
+        );
+
+        // Chart instances for later reference
+        let pointsChart = null;
+        let responseTimeChart = null;
+
+        // Initialize the game
+        function initGame() {
+          level = 1;
+          cardCount = 3;
+          score = 0;
+          sequence = [];
+          playerSequence = [];
+          canClick = false;
+          gameActive = false;
+          currentlyFlipping = false;
+          responseTimes = [];
+          levelScores = [];
+          levelResponseTimes = [];
+
+          updateUI();
+          createCards();
+        }
+
+        // Create the cards in both rows
+        function createCards() {
+          sequenceRow.innerHTML = "";
+          playerRow.innerHTML = "";
+          progressDisplay.innerHTML = "";
+
+          // Generate symbols for this round
+          const shuffledSymbols = [...symbols]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, cardCount);
+
+          // Create sequence row cards (for flipping)
+          for (let i = 0; i < cardCount; i++) {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.dataset.index = i;
+
+            card.innerHTML = `
+                        <div class="card-inner">
+                            <div class="card-front">${shuffledSymbols[i]}</div>
+                            <div class="card-back"></div>
+                        </div>
+                    `;
+
+            sequenceRow.appendChild(card);
+          }
+
+          // Create player row cards with visible symbols
+          for (let i = 0; i < cardCount; i++) {
+            const card = document.createElement("div");
+            card.className = "player-card";
+            card.dataset.index = i;
+            card.textContent = shuffledSymbols[i];
+
+            card.addEventListener("click", () => {
+              if (
+                canClick &&
+                !card.classList.contains("selected") &&
+                !card.classList.contains("wrong")
+              ) {
+                const responseTime = Date.now() - lastSequenceEndTime;
+                responseTimes.push(responseTime);
+                checkPlayerSelection(card, parseInt(card.dataset.index));
+              }
+            });
+
+            playerRow.appendChild(card);
+          }
+        }
+
+        // Start a new round
+        function startRound() {
+          if (!gameActive) return;
+
+          // Reset for new round
+          playerSequence = [];
+          canClick = false;
+          messageEl.textContent = "Watch carefully!";
+
+          // Reset player cards
+          const playerCards = playerRow.querySelectorAll(".player-card");
+          playerCards.forEach((card) => {
+            card.classList.remove("selected");
+            card.classList.remove("wrong");
+          });
+
+          // Reset sequence cards to ensure they're all face down
+          const sequenceCards = sequenceRow.querySelectorAll(".card");
+          sequenceCards.forEach((card) => {
+            if (card.classList.contains("flipped")) {
+              card.classList.remove("flipped");
+            }
+          });
+
+          // Clear progress display
+          progressDisplay.innerHTML = "";
+
+          // Setup new sequence
+          sequence = [];
+
+          // Generate random sequence of indices
+          for (let i = 0; i < level + 1; i++) {
+            sequence.push(Math.floor(Math.random() * cardCount));
+          }
+
+          // Create progress indicators
+          for (let i = 0; i < sequence.length; i++) {
+            const dot = document.createElement("div");
+            dot.className = "dot";
+            progressDisplay.appendChild(dot);
+          }
+
+          // Show the sequence after a delay
+          setTimeout(() => {
+            showSequence();
+          }, 1000);
+        }
+
+        // Show the sequence to the player
+        function showSequence() {
+          let i = 0;
+          const sequenceCards = sequenceRow.querySelectorAll(".card");
+          currentlyFlipping = true;
+
+          function flipNextCard() {
+            if (i < sequence.length) {
+              const cardToFlip = sequenceCards[sequence[i]];
+
+              // Flip card to show symbol
+              cardToFlip.classList.add("flipped");
+
+              // Flip back after a delay
+              setTimeout(() => {
+                cardToFlip.classList.remove("flipped");
+
+                // Wait a bit before showing the next card
+                setTimeout(() => {
+                  i++;
+                  flipNextCard();
+                }, 400);
+              }, 800);
+            } else {
+              // All cards shown
+              currentlyFlipping = false;
+              lastSequenceEndTime = Date.now();
+              setTimeout(() => {
+                messageEl.textContent =
+                  "Now your turn! Click the symbols in the correct order.";
+                canClick = true;
+              }, 500);
+            }
+          }
+
+          // Start the sequence
+          flipNextCard();
+        }
+
+        // Check player's selection
+        function checkPlayerSelection(card, cardIndex) {
+          playerSequence.push(cardIndex);
+
+          // Update progress indicator
+          const currentIndex = playerSequence.length - 1;
+          const dots = progressDisplay.querySelectorAll(".dot");
+
+          if (playerSequence[currentIndex] === sequence[currentIndex]) {
+            card.classList.add("selected");
+            dots[currentIndex].classList.add("correct");
+          } else {
+            card.classList.add("wrong");
+            dots[currentIndex].classList.add("incorrect");
+            setTimeout(() => {
+              gameOver();
+            }, 1000);
+            return;
+          }
+
+          // Check if the player completed the sequence
+          if (playerSequence.length === sequence.length) {
+            canClick = false;
+            const levelScore = level * 10;
+            score += levelScore;
+            levelScores.push({ level, score: levelScore });
+
+            // Calculate average response time for this level
+            const avgResponseTime =
+              responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+            levelResponseTimes.push({ level, time: avgResponseTime });
+            responseTimes = [];
+
+            updateUI();
+
+            setTimeout(() => {
+              levelUp();
+            }, 1000);
+          }
+        }
+
+        // Level up function
+        function levelUp() {
+          level++;
+
+          // Increase card count every 2 levels (max 8)
+          if (level % 2 === 0 && cardCount < 8) {
+            cardCount++;
+            createCards();
+          } else {
+            // Just reset the player cards if not creating new ones
+            const playerCards = playerRow.querySelectorAll(".player-card");
+            playerCards.forEach((card) => {
+              card.classList.remove("selected");
+              card.classList.remove("wrong");
+            });
+          }
+
+          messageEl.textContent = `Great job! Moving to level ${level}`;
+          updateUI();
+
+          setTimeout(() => {
+            startRound();
+          }, 2000);
+        }
+
+        // Update UI elements
+        function updateUI() {
+          levelEl.textContent = level;
+          cardCountEl.textContent = cardCount;
+          scoreEl.textContent = score;
+        }
+
+        // Game over function
+        function gameOver() {
+          gameActive = false;
+          canClick = false;
+          messageEl.textContent = "Wrong sequence! Game over.";
+
+          // Show game over screen
+          finalScoreEl.textContent = score;
+          finalLevelEl.textContent = level;
+          gameOverScreen.style.display = "flex";
+          analyticsContainer.style.display = "none";
+
+          // Add confetti effect
+          createConfetti();
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+          const colors = ["#f00", "#0f0", "#00f", "#ff0", "#0ff", "#f0f"];
+
+          for (let i = 0; i < 100; i++) {
+            const confetti = document.createElement("div");
+            confetti.className = "confetti";
+            confetti.style.backgroundColor =
+              colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.left = `${Math.random() * 100}%`;
+            confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            confetti.style.opacity = Math.random();
+            confetti.style.width = `${Math.random() * 10 + 5}px`;
+            confetti.style.height = confetti.style.width;
+
+            gameOverScreen.appendChild(confetti);
+
+            // Remove after animation
+            setTimeout(() => {
+              confetti.remove();
+            }, 5000);
+          }
+        }
+
+        // Show analytics function
+        function showAnalytics() {
+          // Show analytics container
+          analyticsContainer.style.display = "flex";
+
+          // For testing - add some dummy data if none exists
+          if (levelScores.length === 0) {
+            levelScores = [
+              { level: 1, score: 10 },
+              { level: 2, score: 20 },
+              { level: 3, score: 30 },
+            ];
+            levelResponseTimes = [
+              { level: 1, time: 1200 },
+              { level: 2, time: 1400 },
+              { level: 3, time: 1600 },
+            ];
+            level = 3;
+          }
+
+          // Update the progress bar
+          const maxLevels = 10; // Assuming 10 levels is the "complete" game
+          const completedLevels = level;
+          const completionPercentage = Math.min(
+            Math.round((completedLevels / maxLevels) * 100),
+            100
+          );
+
+          document.getElementById("level-progress-bar").style.width =
+            completionPercentage + "%";
+          document.getElementById("level-progress-bar").textContent =
+            completionPercentage + "%";
+          document.querySelector(".completed-levels").textContent =
+            completedLevels;
+          document.querySelector(".max-levels").textContent = maxLevels;
+
+          // Display the points chart with a small delay
+          setTimeout(() => {
+            createPointsChart();
+            // Display the response time comparison chart after points chart
+            setTimeout(() => {
+              createResponseTimeChart();
+            }, 100);
+          }, 100);
+        }
+
+        // Create the points earned chart
+        function createPointsChart() {
+          const pointsChartCanvas = document.getElementById("points-chart");
+
+          if (!pointsChartCanvas) {
+            console.error("Points chart canvas not found");
+            return;
+          }
+
+          const ctx = pointsChartCanvas.getContext("2d");
+
+          // Process data for chart
+          const labels = levelScores.map((item) => `Level ${item.level}`);
+          const data = levelScores.map((item) => item.score);
+
+          // Create chart
+          if (pointsChart) {
+            pointsChart.destroy();
+          }
+
+          pointsChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Points Earned",
+                  data: data,
+                  backgroundColor: "rgba(75, 192, 192, 0.6)",
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Points",
+                  },
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: "Level",
+                  },
+                },
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: "Points Earned Per Level",
+                  font: {
+                    size: 18,
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        // Create the response time comparison chart
+        function createResponseTimeChart() {
+          const responseTimeChartCanvas = document.getElementById(
+            "response-time-chart"
+          );
+
+          if (!responseTimeChartCanvas) {
+            console.error("Response time chart canvas not found");
+            return;
+          }
+
+          const ctx = responseTimeChartCanvas.getContext("2d");
+
+          // Sample data for typical and neurodiverse children response times
+          // This would ideally come from a database in a real application
+          const typicalChildResponseTimes = [
+            { level: 1, time: 850 },
+            { level: 2, time: 1100 },
+            { level: 3, time: 1300 },
+            { level: 4, time: 1550 },
+            { level: 5, time: 1800 },
+            { level: 6, time: 2000 },
+            { level: 7, time: 2200 },
+            { level: 8, time: 2400 },
+            { level: 9, time: 2600 },
+            { level: 10, time: 2800 },
+          ];
+
+          const neurodiverseChildResponseTimes = [
+            { level: 1, time: 1200 },
+            { level: 2, time: 1500 },
+            { level: 3, time: 1900 },
+            { level: 4, time: 2200 },
+            { level: 5, time: 2600 },
+            { level: 6, time: 3000 },
+            { level: 7, time: 3300 },
+            { level: 8, time: 3600 },
+            { level: 9, time: 3900 },
+            { level: 10, time: 4200 },
+          ];
+
+          // Filter these to only include levels that match the player's progress
+          const maxLevel = level;
+
+          // Create labels for all levels played
+          const labels = [];
+          for (let i = 1; i <= maxLevel; i++) {
+            labels.push(`Level ${i}`);
+          }
+
+          // Get typical child data for these levels
+          const typicalData = typicalChildResponseTimes
+            .filter((item) => item.level <= maxLevel)
+            .map((item) => item.time);
+
+          // Get neurodiverse child data for these levels
+          const neurodiverseData = neurodiverseChildResponseTimes
+            .filter((item) => item.level <= maxLevel)
+            .map((item) => item.time);
+
+          // Get player's actual response times
+          const playerData = levelResponseTimes.map((item) => item.time);
+          // Fill any missing levels with null values
+          while (playerData.length < maxLevel) {
+            playerData.push(null);
+          }
+
+          // Create chart
+          if (responseTimeChart) {
+            responseTimeChart.destroy();
+          }
+
+          responseTimeChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Your Response Time",
+                  data: playerData,
+                  backgroundColor: "rgba(255, 99, 132, 0.2)",
+                  borderColor: "rgba(255, 99, 132, 1)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                },
+                {
+                  label: "Typical Child",
+                  data: typicalData,
+                  backgroundColor: "rgba(54, 162, 235, 0.2)",
+                  borderColor: "rgba(54, 162, 235, 1)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                },
+                {
+                  label: "Neurodiverse Child",
+                  data: neurodiverseData,
+                  backgroundColor: "rgba(255, 206, 86, 0.2)",
+                  borderColor: "rgba(255, 206, 86, 1)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Response Time (ms)",
+                  },
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: "Level",
+                  },
+                },
+              },
+              plugins: {
+                title: {
+                  display: true,
+                  text: "Response Time Comparison",
+                  font: {
+                    size: 18,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      return context.dataset.label + ": " + context.raw + " ms";
+                    },
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        // Event listeners
+        startBtn.addEventListener("click", function () {
+          if (!gameActive && !currentlyFlipping) {
+            gameActive = true;
+            startRound();
+          }
+        });
+
+        resetBtn.addEventListener("click", function () {
+          if (!currentlyFlipping) {
+            initGame();
+            messageEl.textContent = "Game reset! Click Start Game to begin.";
+          }
+        });
+
+        playAgainBtn.addEventListener("click", function () {
+          gameOverScreen.style.display = "none";
+          initGame();
+          messageEl.textContent = "Click Start Game to begin!";
+        });
+
+        analyzeResultsBtn.addEventListener("click", function () {
+          showAnalytics();
+        });
+
+        backToResultsBtn.addEventListener("click", function () {
+          analyticsContainer.style.display = "none";
+        });
+
+        // Initialize the game when the page loads
+        initGame();
+
+        // Add keyboard shortcuts
+        document.addEventListener("keydown", function (e) {
+          // Start with spacebar
+          if (e.code === "Space" && !gameActive && !currentlyFlipping) {
+            e.preventDefault();
+            gameActive = true;
+            startRound();
+          }
+
+          // Reset with R key
+          if (e.code === "KeyR" && !currentlyFlipping) {
+            e.preventDefault();
+            initGame();
+            messageEl.textContent = "Game reset! Click Start Game to begin.";
+          }
+
+          // Number keys for selecting cards (1-9)
+          if (canClick && e.key >= "1" && e.key <= "9") {
+            const index = parseInt(e.key) - 1;
+            const playerCards = playerRow.querySelectorAll(".player-card");
+
+            if (index < playerCards.length) {
+              const card = playerCards[index];
+              if (
+                !card.classList.contains("selected") &&
+                !card.classList.contains("wrong")
+              ) {
+                const responseTime = Date.now() - lastSequenceEndTime;
+                responseTimes.push(responseTime);
+                card.click(); // Trigger the click event
+              }
+            }
+          }
+        });
+
+        // Optional: Add tutorial overlay functionality
+        function showTutorial() {
+          // You could implement a step-by-step tutorial here
+          // For example with an overlay that highlights different parts of the UI
+          // and explains how to play
+        }
+
+        // Optional: Add difficulty settings
+        function changeDifficulty(level) {
+          // Example: 'easy', 'medium', 'hard'
+          // Could adjust timing, number of cards, etc.
+        }
+
+        // Optional: Add sound effects
+        const sounds = {
+          flip: new Audio("https://example.com/flip.mp3"), // You would need to host these sounds
+          correct: new Audio("https://example.com/correct.mp3"),
+          wrong: new Audio("https://example.com/wrong.mp3"),
+          levelUp: new Audio("https://example.com/levelup.mp3"),
+        };
+
+        // Function to play sound if enabled
+        function playSound(soundName) {
+          // Check if sound is enabled in settings
+          const soundEnabled = localStorage.getItem("soundEnabled") !== "false";
+          if (soundEnabled && sounds[soundName]) {
+            sounds[soundName].play().catch((error) => {
+              // Handle any errors with sound playback
+              console.log("Sound playback failed:", error);
+            });
+          }
+        }
+
+        // Optional: Add settings menu
+        function toggleSound() {
+          const soundEnabled = localStorage.getItem("soundEnabled") !== "false";
+          localStorage.setItem("soundEnabled", !soundEnabled);
+          // Update UI to reflect change
+        }
+
+        // Optional: Add high score storage
+        function saveHighScore() {
+          const currentHighScore = localStorage.getItem("highScore") || 0;
+          if (score > currentHighScore) {
+            localStorage.setItem("highScore", score);
+            return true; // New high score
+          }
+          return false;
+        }
+
+        // Optional: Add data export
+        function exportResultsAsCSV() {
+          let csvContent = "data:text/csv;charset=utf-8,";
+
+          // Headers
+          csvContent += "Level,Score,Average Response Time (ms)\n";
+
+          // Data rows
+          for (let i = 0; i < levelScores.length; i++) {
+            const level = levelScores[i].level;
+            const score = levelScores[i].score;
+            const responseTime = levelResponseTimes[i]
+              ? levelResponseTimes[i].time
+              : "N/A";
+
+            csvContent += `${level},${score},${responseTime}\n`;
+          }
+
+          // Create download link
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement("a");
+          link.setAttribute("href", encodedUri);
+          link.setAttribute("download", "memory_maze_results.csv");
+          document.body.appendChild(link);
+
+          // Trigger download
+          link.click();
+
+          // Clean up
+          document.body.removeChild(link);
+        }
+
+        // Optional: Add share results functionality
+        function shareResults() {
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "My Memory Maze Results",
+                text: `I scored ${score} points and reached level ${level} in Memory Maze!`,
+                url: window.location.href,
+              })
+              .catch((error) => console.log("Error sharing", error));
+          } else {
+            // Fallback for browsers that don't support the Web Share API
+            alert(`Share your score: ${score} points, Level ${level}`);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

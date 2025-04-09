@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindTrack</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e3e3f6;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+      .features h1 {
+        font-size: 40px;
+      }
+      .features {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        padding: 40px 20px 0;
+        flex-wrap: nowrap; /* keep all in one row */
+        overflow-x: auto; /* allows scrolling on smaller screens */
+      }
+
+      .feature-box {
+        border-radius: 10px;
+        padding: 20px;
+        width: 180px; /* smaller width so 5 can fit */
+        text-align: center;
+
+        transition: transform 0.3s ease;
+        flex-shrink: 0; /* so all boxes keep their size in overflow */
+      }
+
+      .feature-box:hover {
+        transform: translateY(-20px);
+      }
+
+      .feature-box img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        margin-bottom: 15px;
+      }
+
+      .feature-box h3 {
+        font-size: 18px;
+        color: #333;
+      }
+
+      .container {
+        padding: 20px;
+      }
+      .container h1 {
+        font-size: 40px;
+      }
+      .container h2 {
+        font-size: 30px;
+      }
+      .cards {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 50px;
+      }
+      .card {
+        margin-top: 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        width: 250px;
+        transition: transform 0.3s ease-in-out;
+      }
+      .card:hover {
+        transform: scale(1.05);
+      }
+      .card img {
+        width: 200px;
+      }
+      button {
+        background: #6a5acd;
+        color: white;
+        border: none;
+        padding: 12px 40px;
+        margin-top: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background 0.3s;
+        width: 100%;
+        font-size: 16px;
+      }
+      button:hover {
+        background: #483d8b;
+      }
+      footer {
+        margin-top: 30px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome to MindTrack🧠</h1>
+      <p>
+        Empowering early detection of neurodiverse conditions in children
+        through collaborative assessment and support.
+      </p>
+    </div>
+    <div class="features">
+      <div class="feature-box">
+        <img
+          src="{{ url_for('static', filename='images/early.webp') }}"
+          alt="Early Detection"
+        />
+        <h3>Early Detection 🔍</h3>
+      </div>
+      <div class="feature-box">
+        <img
+          src="{{ url_for('static', filename='images/assess.png') }}"
+          alt="Collaboration"
+        />
+        <h3>Collaborative Assessment 📋</h3>
+      </div>
+      <div class="feature-box">
+        <img
+          src="{{ url_for('static', filename='images/reports.png') }}"
+          alt="Reports"
+        />
+        <h3>Personalized Reports 📊</h3>
+      </div>
+      <div class="feature-box">
+        <img
+          src="{{ url_for('static', filename='images/PTt.png') }}"
+          alt="Support"
+        />
+        <h3>Parent-Teacher Dashboard 🖥️</h3>
+      </div>
+      <div class="feature-box">
+        <img
+          src="{{ url_for('static', filename='images/learning.png') }}"
+          alt="Support"
+        />
+        <h3>Cognitive Learning Excerises 🎯</h3>
+      </div>
+    </div>
+    <br /><br /><br /><br />
+    <div class="container">
+      <h2>🖥️ Access Your Dashboard 🖥️</h2>
+      <div class="cards">
+        <div class="card">
+          <img
+            src="{{ url_for('static', filename='images/parent-login-page.jpg') }}"
+            alt="Parent Icon"
+          />
+          <h2>Parent Login</h2>
+          <p>
+            Access your child's assessments and track their progress in a secure
+            environment.
+          </p>
+          <form action="{{ url_for('parent_login') }}" method="get">
+            <button type="submit">Login</button>
+          </form>
+        </div>
+        <div class="card">
+          <img
+            src="{{ url_for('static', filename='images/techer login page.webp') }}"
+            alt="Teacher Icon"
+          />
+          <h2>Teacher Login</h2>
+          <p>
+            Monitor and document student behaviors and development patterns.
+          </p>
+          <form action="{{ url_for('teacher_login') }}" method="get">
+            <button type="submit">Login</button>
+          </form>
+        </div>
+        <div class="card">
+          <img
+            src="{{ url_for('static', filename='images/counsellor login page.png') }}"
+            alt="Counselor Icon"
+          />
+          <h2>Counselor Login</h2>
+          <p>
+            Provide professional guidance and assessment for neurodiverse
+            children.
+          </p>
+          <form action="{{ url_for('counselor_login') }}" method="get">
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        &copy; 2025 MindTrack. All rights reserved.<br />Dedicated to supporting
+        neurodiverse children and their families.
+      </p>
+    </footer>
+  </body>
+</html>

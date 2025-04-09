@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Maze Game</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        background-color: antiquewhite;
+      }
+      .game-container {
+        margin-top: 20px;
+      }
+      .cards,
+      .options {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 20px;
+      }
+      .card,
+      .option {
+        width: 80px;
+        height: 80px;
+        border: 2px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        cursor: pointer;
+      }
+      .hidden {
+        visibility: hidden;
+      }
+      .selected {
+        background-color: lightblue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Memory Maze Game</h1>
+    <div class="game-container">
+      <p>Time: <span id="timer">0</span> seconds</p>
+      <div class="cards" id="symbolCards"></div>
+      <button onclick="startGame()">Start</button>
+      <p id="question">Select the symbols in the correct order!</p>
+      <div class="options" id="options"></div>
+      <button onclick="checkOrder()">Check</button>
+      <p id="result"></p>
+    </div>
+    <script>
+      let symbolsList = [
+        ["⭐", "🍎", "🚗"],
+        ["🌙", "🎈", "🐱"],
+        ["🎵", "🏀", "🐶"],
+        ["🍕", "🌻", "🚀"],
+      ];
+      let correctOrder = [];
+      let userOrder = [];
+      let timer;
+      let timeElapsed = 0;
+
+      function startGame() {
+        document.getElementById("timer").textContent = "0";
+        timeElapsed = 0;
+        userOrder = [];
+        document
+          .querySelectorAll(".option")
+          .forEach((opt) => opt.classList.remove("selected"));
+        timer = setInterval(() => {
+          timeElapsed++;
+          document.getElementById("timer").textContent = timeElapsed;
+        }, 1000);
+
+        let randomSet =
+          symbolsList[Math.floor(Math.random() * symbolsList.length)];
+        correctOrder = [...randomSet];
+        displayCards(randomSet);
+        displayOptions(randomSet);
+
+        setTimeout(hideCards, 3000);
+      }
+
+      function displayCards(symbols) {
+        let cardsContainer = document.getElementById("symbolCards");
+        cardsContainer.innerHTML = "";
+        symbols.forEach((symbol) => {
+          let card = document.createElement("div");
+          card.className = "card";
+          card.textContent = symbol;
+          cardsContainer.appendChild(card);
+        });
+      }
+
+      function displayOptions(symbols) {
+        let optionsContainer = document.getElementById("options");
+        optionsContainer.innerHTML = "";
+        let shuffledOptions = [...symbols].sort(() => Math.random() - 0.5);
+        shuffledOptions.forEach((symbol) => {
+          let option = document.createElement("div");
+          option.className = "option";
+          option.textContent = symbol;
+          option.onclick = () => selectOption(option, symbol);
+          optionsContainer.appendChild(option);
+        });
+      }
+
+      function hideCards() {
+        document
+          .querySelectorAll(".card")
+          .forEach((card) => card.classList.add("hidden"));
+        setTimeout(() => {
+          document
+            .querySelectorAll(".card")
+            .forEach((card) => (card.textContent = ""));
+        }, 500);
+      }
+
+      function selectOption(element, symbol) {
+        if (userOrder.length < 3) {
+          userOrder.push(symbol);
+          element.classList.add("selected");
+        }
+      }
+
+      function checkOrder() {
+        clearInterval(timer);
+        if (JSON.stringify(userOrder) === JSON.stringify(correctOrder)) {
+          document.getElementById("result").textContent = "Correct! Well done!";
+        } else {
+          document.getElementById("result").textContent = "Try again!";
+        }
+      }
+    </script>
+  </body>
+</html>
